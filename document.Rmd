@@ -11,9 +11,122 @@ output:
     theme: simplex
 ---
 
+```{r libraries, cache=TRUE}
+# Load necessary libraries
+#Install and import libraries.
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("lubridate")) install.packages("lubridate")
+if (!require("vars")) install.packages("vars")
+if (!require("forecast")) install.packages("forecast")
+if (!require("rugarch")) install.packages("rugarch")
+if (!require("dplyr")) install.packages("dplyr")
+if (!require("purrr")) install.packages("purrr")
+if (!require("readxl")) install.packages("readxl")
+if (!require("janitor")) install.packages("janitor")
+
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(vars)
+library(forecast)
+library(rugarch)
+library(purrr)
+library(readxl)
+library(janitor)  # For cleaning column names
+```
+
 ## Title
 ```{r setup, include=FALSE}
 # Global options
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
 ```
+
+
+### Loading data
+```{r data-prep, cache=TRUE}
+coal_futures <- read.csv("data/NewCastle_Coal_Futures_historical_prices.csv")
+elec_generation <- readxl::read_excel("data/US_Elec_Generation_Monthly.xlsx")
+all_sheets <- excel_sheets("data/US_Elec_Generation_Monthly.xlsx")
+oil_futures <- read.csv("data/Crude_Oil_WTI_Futures_historical_prices.csv")
+gas_futures <- read.csv("data/Natural_Gas_Futures_historical_prices.csv")
+
+
+# Coal Futures
+coal_futures <- coal_futures %>%
+  mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
+  dplyr::select(YearMonth, Last) %>%
+  rename(Coal_Price = Last)
+
+# Oil Futures
+oil_futures <- oil_futures %>%
+    mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
+  dplyr::select(YearMonth, Last) %>%
+  rename(Oil_Price = Last)
+
+# Natural Gas Futures
+gas_futures <- gas_futures %>%
+    mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%d/%m/%Y"), "month")) %>%
+  dplyr::select(YearMonth, Last) %>%
+  rename(Gas_Price = Last)
+
+
+
+
+# Function to remove all single quotes from character columns
+remove_quotes <- function(df) {
+  df %>%
+    mutate(across(where(is.character), ~ gsub("'", "", .))) %>%
+     mutate(across(where(is.character), ~ gsub("\\n|\\r", " ", .)))  # Remove line breaks
+}
+
+valid_sources <- c("Coal", "Gas", "Oil")
+# not as wide table
+elec_generation_processed <- all_sheets %>%
+  lapply(function(sheet) {
+    read_excel("data/US_Elec_Generation_Monthly.xlsx", sheet = sheet) %>%
+      remove_quotes() %>%
+      clean_names() %>%
+      mutate(
+  energy_source = case_when(
+    energy_source == "Natural gas" ~ "Gas",
+    energy_source == "Other Gases" ~ "Gas",
+    energy_source == "Petroleum" ~ "Oil",
+    TRUE ~ energy_source
+  )
+) %>%
+     filter(state == "US-Total") %>% 
+      filter(startsWith(type_of_producer, "Total")) %>% 
+     filter(energy_source %in% valid_sources) %>%
+      mutate(
+        year_month = make_date(year, month)  # Create a YearMonth column
+      ) %>%
+      dplyr::select(year_month, energy_source, mwh) %>%
+      rename(YearMonth = year_month)
+  }) %>%
+  bind_rows()  # Combine all processed data from different sheets
+
+sum(is.na(coal_futures$YearMonth))
+sum(is.na(gas_futures$YearMonth))
+sum(is.na(oil_futures$YearMonth))
+
+
+wide_table <- elec_generation_processed %>%
+  pivot_wider(
+    names_from = energy_source,  # Use 'energy_source' for column names
+    values_from = mwh,          # Use 'mwh' for the values in those columns          # Fill missing values with 0
+  )
+
+
+# Merge all datasets
+merged_data <- purrr::reduce(
+  list(coal_futures, oil_futures, gas_futures, wide_table),
+  dplyr::left_join,
+  by = "YearMonth"
+)
+
+
+write.csv(merged_data,'data/merged_data.csv', row.names=FALSE)
+```
+
+
 
