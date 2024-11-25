@@ -1,0 +1,19 @@
+---
+title: "title"
+author: "Luca Renz & Kasper Aleksander Kuznik"
+date: "December 2024"
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    df_print: paged
+    theme: simplex
+---
+
+## Title
+```{r setup, include=FALSE}
+# Global options
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
