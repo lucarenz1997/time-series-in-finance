@@ -1,5 +1,5 @@
 ---
-title: "title"
+title: "Investigation of the relationship between price of futures contracts of energy commodities and their energy generation contribution to US energy grid"
 author: "Luca Renz & Kasper Aleksander Kuznik"
 date: "December 2024"
 output:
@@ -11,7 +11,25 @@ output:
     theme: simplex
 ---
 
-```{r libraries, cache=TRUE}
+```{r setup, include=FALSE}
+# Global options
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+\newpage
+
+# 1. Introduction
+Energy generation and its relationship to commodity markets have significant implications for financial stability and market behavior. This paper examines the influence of U.S. energy generation—categorized by sources such as natural gas, crude oil, and coal—on the corresponding commodities futures prices. By employing time series analysis, we explore how shifts in energy generation impact the pricing dynamics of these key commodities. While the focus of this documentation is on the primary findings and visualizations, supplementary charts and detailed analyses are included in the appendix.
+
+# 2. Literature Review
+TBD
+
+# 3. Methods
+To investigate the causal relationship between U.S. energy generation by source and commodities futures prices for Natural Gas, Crude Oil, and Coal, the first step is to prepare the data to ensure comparability. After cleansing and preprocessing the data, the "Augmented Dickey-Fuller Test" is applied to determine whether the time series are stationary. If any time series are found to be non-stationary, they are transformed using the diff(log()) method until the "Dickey-Fuller Test" confirms stationarity. Once the series are stationary, they are used to construct vector autoregressive models (VAR models) to analyze the dynamic relationships. Additionally, Granger causality tests are performed to evaluate the direction and strength of causality between the variables.
+
+## 3.1 Data collection and preprocessing
+The historical futures prices for Natural Gas, Crude Oil (WTI), and Newcastle Coal were sourced from Barchart.com in the form of CSV files. Data on U.S. electricity generation, categorized by energy source, was obtained from the U.S. Energy Information Administration as XLSX file. This method required manual extraction and preparation. The availability of data varies: Crude Oil futures pricing data begins in 1983, Natural Gas futures data in 1990, Coal futures data in 2009, and U.S. energy generation data in 2001. All datasets are reported on a monthly basis and are available up to August 2024. Despite these differences in starting dates, the data was aligned to ensure consistency for the analysis period.
+```{r libraries, results = "hide"}
 # Load necessary libraries
 #Install and import libraries.
 if (!require("tidyverse")) install.packages("tidyverse")
@@ -23,6 +41,7 @@ if (!require("dplyr")) install.packages("dplyr")
 if (!require("purrr")) install.packages("purrr")
 if (!require("readxl")) install.packages("readxl")
 if (!require("janitor")) install.packages("janitor")
+if (!require("tseries")) install.packages("tseries")
 
 library(tidyverse)
 library(dplyr)
@@ -33,35 +52,16 @@ library(rugarch)
 library(purrr)
 library(readxl)
 library(janitor)  # For cleaning column names
+library(tseries) # For adf.test()
+library(quantmod) # - this package is used to fetch marcoeconimic data from FED
 ```
 
-## Title
-```{r setup, include=FALSE}
-# Global options
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
-```
-
-
-### Loading data
-```{r data-prep, cache=TRUE}
+```{r data-prep, results = "hide", cache=TRUE}
 coal_futures <- read.csv("data/NewCastle_Coal_Futures_historical_prices.csv")
 elec_generation <- readxl::read_excel("data/US_Elec_Generation_Monthly.xlsx")
 all_sheets <- excel_sheets("data/US_Elec_Generation_Monthly.xlsx")
 oil_futures <- read.csv("data/Crude_Oil_WTI_Futures_historical_prices.csv")
 gas_futures <- read.csv("data/Natural_Gas_Futures_historical_prices.csv")
-
-
-# Coal Futures
-coal_futures <- coal_futures %>%
-  mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
-  dplyr::select(YearMonth, Last) %>%
-  rename(Coal_Price = Last)
-
-# Oil Futures
-oil_futures <- oil_futures %>%
-    mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
-  dplyr::select(YearMonth, Last) %>%
-  rename(Oil_Price = Last)
 
 # Natural Gas Futures
 gas_futures <- gas_futures %>%
@@ -69,8 +69,17 @@ gas_futures <- gas_futures %>%
   dplyr::select(YearMonth, Last) %>%
   rename(Gas_Price = Last)
 
+# Oil Futures
+oil_futures <- oil_futures %>%
+    mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
+  dplyr::select(YearMonth, Last) %>%
+  rename(Oil_Price = Last)
 
-
+# Coal Futures
+coal_futures <- coal_futures %>%
+  mutate(YearMonth = floor_date(as.Date(Exp.Date, format = "%Y-%m-%d"), "month")) %>%
+  dplyr::select(YearMonth, Last) %>%
+  rename(Coal_Price = Last)
 
 # Function to remove all single quotes from character columns
 remove_quotes <- function(df) {
@@ -113,7 +122,7 @@ sum(is.na(oil_futures$YearMonth))
 wide_table <- elec_generation_processed %>%
   pivot_wider(
     names_from = energy_source,  # Use 'energy_source' for column names
-    values_from = mwh,          # Use 'mwh' for the values in those columns          # Fill missing values with 0
+    values_from = mwh,          # Use 'mwh' for the values in those columns, fill missing values with 0
   )
 
 
@@ -128,8 +137,7 @@ merged_data <- purrr::reduce(
 write.csv(merged_data,'data/merged_data.csv', row.names=FALSE)
 ```
 
-# Data Analysis
-## Exploratory Data Analysis
+## 3.2 Data Preparation and Visualization
 ```{r analysis, cache=TRUE}
 # Data filtering from 2012-01-01 to 2024-08-01
 merged_data_reduced <- merged_data[38:189,]
@@ -144,17 +152,20 @@ Coal_US_Elec <- ts(merged_data_reduced$Coal, start = as.yearmon(merged_data_redu
 
 # Plotting the data
 # Futures data
-plot(Nat_Gas_Futures_price, xlab = "Time", ylab = "Natural Gas Futures Price [tsd USD]", main = "Natural Gas Future Price January 2012 - August 2024")
-plot(Oil_Futures_price, xlab = "Time", ylab = "Oil Futures Price [USD]", main = "Oil Future Price January 2012 - August 2024")
-plot(Coal_Futures_price, xlab = "Time", ylab = "Coal Futures Price [USD]", main = "Coal Future Price January 2012 - August 2024")
+par(mfrow = c(2,3), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(Nat_Gas_Futures_price, xlab = "Time", ylab = "Natural Gas Futures Price [tsd USD]", main = "Natural Gas Future Price\n Jan2012 - Aug2024")
+plot(Oil_Futures_price, xlab = "Time", ylab = "Oil Futures Price [USD]", main = "Oil Future Price\n Jan2012 - Aug2024")
+plot(Coal_Futures_price, xlab = "Time", ylab = "Coal Futures Price [USD]", main = "Coal Future Price\n Jan2012 - Aug2024")
 # US Electricity data
-plot(Nat_Gas_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Natural Gas", main = "US Electricity Generation - Natural Gas - January 2012 - August 2024")
-plot(Oil_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Oil", main = "US Electricity Generation - Oil - January 2012 - August 2024")
-plot(Coal_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Coal", main = "US Electricity Generation - Oil - January 2012 - August 2024")
+plot(Nat_Gas_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Natural Gas", main = "Natural GAs US Electricity Generation\n Jan2012 - Aug2024")
+plot(Oil_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Oil", main = "Oil US Electricity Generation\n Jan2012 - Aug2024")
+plot(Coal_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Coal", main = "Coal US Electricity Generation\n Jan2012 - Aug2024")
 ```
 
-## Testing data for stationarity
-```{r }
+## 3.3 Time Series Sationarity
+To develop the VAR models, it is essential to first ensure that all time series are stationary. A stationary time series is defined as one with consistent statistical properties over time, such as mean, variance, and autocorrelation. To verify stationarity, the Augmented Dickey-Fuller test is applied to each of the investigated time series. The test results, including p-values, are used to assess the stationarity of the time series data, such as futures prices of Natural Gas, Crude Oil, Coal, as well as U.S. energy generation by the energy source. 
+
+```{r, results='hide'}
 # Testing for stationarity for both time series and creating stationary time series of same lengths
 # Futures data
 adf.test(Nat_Gas_Futures_price) # Test for stationarity of the Natural Gas Future price series
@@ -165,7 +176,22 @@ adf.test(Coal_Futures_price) # Test for stationarity of the Coal Futures price s
 adf.test(Nat_Gas_US_Elec) # Test for stationarity of Nat Gas US Elec Gen Monthly series
 adf.test(Oil_US_Elec) # Test for stationarity of Oil US Elec Gen Monthly series
 adf.test(Coal_US_Elec) # Test for stationarity of Coal US Elec Monthly generation series
+```
 
+| Time series                           | p-value |
+|---------------------------------------|---------|
+| Natural Gas Futures Price             |   ???   |
+| Crude Oil Futures Price               |   ???   |
+| Coal Futures Prices                   |   ???   |
+| US Electricity Generation Natural Gas |   ???   |
+| US Electricity Generation Crude Oil   |   ???   |
+| US Electricity Generation Coal        |   ???   |
+
+*Table 1: Augmented Diickey-Fuller test results for investigated time series*
+
+Time series with a P-value greater than 0.05, such as Natural Gas U.S. energy generation and futures prices of Natural Gas, Crude Oil, and Coal, are classified as non-stationary. To address this, stationarity is introduced by applying diff(log()) transformation.
+
+```{r, results='hide'}
 # Apply diff-log-transformation if necessary
 # Futures Data
 Nat_Gas_Futures_returns <- diff(log(Nat_Gas_Futures_price))
@@ -176,10 +202,11 @@ Coal_Futures_returns <- diff(log(Coal_Futures_price))
 Nat_Gas_US_Elec_diff <- diff(log(Nat_Gas_US_Elec))
 
 # Plotting the differences
-plot(Nat_Gas_Futures_returns)
-plot(Oil_Futures_returns)
-plot(Coal_Futures_returns)
-plot(Nat_Gas_US_Elec_diff)
+par(mfrow = c(2,3), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(Nat_Gas_Futures_returns, xlab = "Time", ylab = "Natural Gas Futures Returns", main = "Natural Gas Future Returns\n Jan2012 - Aug2024")
+plot(Oil_Futures_returns, xlab = "Time", ylab = "Oil Futures Returns", main = "Oil Gas Future Returns\n Jan2012 - Aug2024")
+plot(Coal_Futures_returns, xlab = "Time", ylab = "Coal Futures Returns", main = "Coal Gas Future Returns\n Jan2012 - Aug2024")
+plot(Nat_Gas_US_Elec_diff, xlab = "Time", ylab = "Natural Gas US Electricity Generation first difference", main = "Natural Gas US Electricity Generation First Difference\n Jan2012 - Aug2024")
 
 # Check for stationarity again
 adf.test(Nat_Gas_Futures_returns) # Test for stationarity of Diff of Nat Gas US Elec Gen Monthly series
@@ -188,28 +215,35 @@ adf.test(Coal_Futures_returns) # Test for stationarity of Diff of Coal US Elec M
 adf.test(Nat_Gas_US_Elec_diff) # Test for stationarity of Diff of Coal US Elec Monthly generation series
 ```
 
-# 1a. Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
-```{r}
+| Time series                           | p-value |
+|---------------------------------------|---------|
+| Natural Gas Futures Price             |   ???   |
+| Crude Oil Futures Price               |   ???   |
+| Coal Futures Prices                   |   ???   |
+| US Electricity Generation Natural Gas |   ???   |
+
+*Table 2: Augmented Diickey-Fuller test results for investigated time series after first differences*
+
+# 4. VAR Model and Granger Causality
+Once the time series are made stationary by applying first differences, the next step is to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables... TBD
+
+## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
+```{r, results='hide', fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
 VAR_est <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff), ic="AIC", lag.max = 24)
 coeftest(VAR_est)
 causality(VAR_est, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
 causality(VAR_est, cause="Nat_Gas_US_Elec_diff")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
 
-# Interpretation
-# TBD
-
-# Degression: Plotting impulse response functions
-plot(irf(VAR_est, impulse="Nat_Gas_US_Elec_diff", response="Nat_Gas_Futures_returns")) # We shock Nat_Gas_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec_diff")) # We shock Nat_Gas_US_Elec_Diff at time t
-# Interpretation:
-# TBD
-
+# Plotting impulse response functions
+par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(irf(VAR_est, impulse="Nat_Gas_US_Elec_diff", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response \nfrom Natural Gas US Electricity Generation Diff") # We shock Nat_Gas_Futures_price_diff at time t
+plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec_diff"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation Diff", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec_Diff at time t
 ```
 
+## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
 Natural Gas Data is not stationary but give p-value 0.06 checking the results out of curiosity
-# 1b. Natural Gas Futures Returns vs Natural Gas US Electricity Generation
-```{r}
+```{r, results='hide', fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
 Nat_Gas_US_Elec <- Nat_Gas_US_Elec[-1]
 VAR_est <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec), ic="AIC", lag.max = 24)
@@ -217,53 +251,43 @@ coeftest(VAR_est)
 causality(VAR_est, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
 causality(VAR_est, cause="Nat_Gas_US_Elec")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
 
-# Interpretation
-# TBD
-
-# Degression: Plotting impulse response functions
-plot(irf(VAR_est, impulse="Nat_Gas_US_Elec", response="Nat_Gas_Futures_returns")) # We shock Nat_Gas_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec")) # We shock Nat_Gas_US_Elec at time t
-# Interpretation:
-# TBD
-
+# Plotting impulse response functions
+par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(irf(VAR_est, impulse="Nat_Gas_US_Elec", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response from \nNatural Gas US Electricity Generation") # We shock Nat_Gas_Futures_price_diff at time t
+plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec at time t
 ```
 
-# 2. Oil Futures Returns vs Oil US Electricity Generation
-```{r}
+## 4.2 Oil Futures Returns vs Oil US Electricity Generation
+```{r, results='hide', fig.width=6, fig.height=4}
 Oil_US_Elec <- Oil_US_Elec[-1]
-VAR_est <- VAR(cbind(Oil_Futures_price_diff, Oil_US_Elec), ic="AIC", lag.max = 24)
+VAR_est <- VAR(cbind(Oil_Futures_returns, Oil_US_Elec), ic="AIC", lag.max = 24)
 coeftest(VAR_est)
 causality(VAR_est, cause="Oil_Futures_returns")["Granger"] # Testing for Granger-causal effects of the US Oil Electricity Generation on oil futures returns
 causality(VAR_est, cause="Oil_US_Elec")["Granger"] # Testing for Granger-causal effects of oil futures returns on US Oil Electricity Generation
 
-# Interpretation
-# TBD
-
-# Degression: Plotting impulse response functions
-plot(irf(VAR_est, impulse="Oil_US_Elec", response="Oil_Futures_returns")) # We shock Oil futures returns at time t
-plot(irf(VAR_est, impulse="Oil_Futures_returns", response="Oil_US_Elec")) # We shock US Oil Electricity Generation at time t
-# Interpretation:
-# TBD
-
+# Plotting impulse response functions
+par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(irf(VAR_est, impulse="Oil_US_Elec", response="Oil_Futures_returns"), xlab = "Lag", ylab = "Oil Futures Returns", main = "Orthogonal Impulse Response \nfrom Oil US Electricity Generation") # We shock Oil futures returns at time t
+plot(irf(VAR_est, impulse="Oil_Futures_returns", response="Oil_US_Elec"), xlab = "Lag", ylab = "Oil US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Oil Futures Returns") # We shock US Oil Electricity Generation at time t
 ```
 
-# 3. Coal Futures Returns vs Coal US Electricity Generation
-```{r}
+## 4.3 Coal Futures Returns vs Coal US Electricity Generation
+```{r, results = 'hide', fig.width=6, fig.height=4}
 Coal_US_Elec <- Coal_US_Elec[-1]
 VAR_est <- VAR(cbind(Coal_Futures_returns, Coal_US_Elec), ic="AIC", lag.max = 24)
 coeftest(VAR_est)
 causality(VAR_est, cause="Coal_Futures_returns")["Granger"] # Testing for Granger-causal effects of the Coal_US_Elec on Coal futures returns
 causality(VAR_est, cause="Coal_US_Elec")["Granger"] # Testing for Granger-causal effects of coal futures returns on Coal_US_Elec
 
-# Interpretation
-# TBD
-
-# Degression: Plotting impulse response functions
-plot(irf(VAR_est, impulse="Coal_US_Elec", response="Coal_Futures_returns")) # We shock Coal_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Coal_Futures_returns", response="Coal_US_Elec")) # We shock Coal_US_Elec at time t
-# Interpretation:
-
-
+# Plotting impulse response functions
+par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
+plot(irf(VAR_est, impulse="Coal_US_Elec", response="Coal_Futures_returns"), xlab = "Lag", ylab = "Coal Futures Returns", main = "Orthogonal Impulse Response from \nCoal US Electricity Generation") # We shock Coal_Futures_price_diff at time t
+plot(irf(VAR_est, impulse="Coal_Futures_returns", response="Coal_US_Elec"), xlab = "Lag", ylab = "Coal US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Coal Futures Returns") # We shock Coal_US_Elec at time t
 ```
 
-# GARCH model to be developed
+# 5. Results & Conclusion
+TBD
+
+# 6. Appendix
+TBD
+
