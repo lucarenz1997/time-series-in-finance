@@ -21,8 +21,8 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
 # 1. Introduction
 Energy generation and its relationship to commodity markets have significant implications for financial stability and market behavior. This paper examines the influence of U.S. energy generation—categorized by sources such as natural gas, crude oil, and coal—on the corresponding commodities futures prices. By employing time series analysis, we explore how shifts in energy generation impact the pricing dynamics of these key commodities. While the focus of this documentation is on the primary findings and visualizations, supplementary charts and detailed analyses are included in the appendix.
 
-# 2. Literature Review
-TBD
+# 2. Motivation
+The interplay between commodity markets and energy generation is pivotal to understanding economic resilience and environmental sustainability in the contemporary energy landscape. This study is motivated by the need to dissect the dynamics between U.S. energy production and the futures prices of critical commodities—namely natural gas, crude oil, and coal. These commodities not only fuel the nation but also significantly influence the financial markets due to their integral role in energy generation. Therefore, the hypothesis under test in this study is that changes in U.S. energy generation impact the futures prices of natural gas, crude oil, and coal. It is aimed to verify this by analyzing time series data to understand if energy production fluctuations can predictably influence market trends.
 
 # 3. Methods
 To investigate the causal relationship between U.S. energy generation by source and commodities futures prices for Natural Gas, Crude Oil, and Coal, the first step is to prepare the data to ensure comparability. After cleansing and preprocessing the data, the "Augmented Dickey-Fuller Test" is applied to determine whether the time series are stationary. If any time series are found to be non-stationary, they are transformed using the diff(log()) method until the "Dickey-Fuller Test" confirms stationarity. Once the series are stationary, they are used to construct vector autoregressive models (VAR models) to analyze the dynamic relationships. Additionally, Granger causality tests are performed to evaluate the direction and strength of causality between the variables.
@@ -168,7 +168,7 @@ To develop the VAR models, it is essential to first ensure that all time series 
 ```{r, results='hide'}
 # Testing for stationarity for both time series and creating stationary time series of same lengths
 # Futures data
-adf.test(Nat_Gas_Futures_price) # Test for stationarity of the Natural Gas Future price series
+adf.test(Nat_Gas_Futures_price) # Test for stationarity of the Natural Gas Future price series 
 adf.test(Oil_Futures_price) # Test for stationarity of the Oil Futures price series
 adf.test(Coal_Futures_price) # Test for stationarity of the Coal Futures price series
 
