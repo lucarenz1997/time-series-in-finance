@@ -180,12 +180,12 @@ adf.test(Coal_US_Elec) # Test for stationarity of Coal US Elec Monthly generatio
 
 | Time series                           | p-value |
 |---------------------------------------|---------|
-| Natural Gas Futures Price             |   ???   |
-| Crude Oil Futures Price               |   ???   |
-| Coal Futures Prices                   |   ???   |
-| US Electricity Generation Natural Gas |   ???   |
-| US Electricity Generation Crude Oil   |   ???   |
-| US Electricity Generation Coal        |   ???   |
+| Natural Gas Futures Price             |  0.353  |
+| Crude Oil Futures Price               |  0.610  |
+| Coal Futures Prices                   |  0.056  |
+| US Electricity Generation Natural Gas |  0.068  |
+| US Electricity Generation Crude Oil   |  0.010  |
+| US Electricity Generation Coal        |  0.010  |
 
 *Table 1: Augmented Diickey-Fuller test results for investigated time series*
 
@@ -217,17 +217,44 @@ adf.test(Nat_Gas_US_Elec_diff) # Test for stationarity of Diff of Coal US Elec M
 
 | Time series                           | p-value |
 |---------------------------------------|---------|
-| Natural Gas Futures Price             |   ???   |
-| Crude Oil Futures Price               |   ???   |
-| Coal Futures Prices                   |   ???   |
-| US Electricity Generation Natural Gas |   ???   |
+| Natural Gas Futures Price             |   0.01  |
+| Crude Oil Futures Price               |   0.01  |
+| Coal Futures Prices                   |   0.01  |
+| US Electricity Generation Natural Gas |   0.01  |
 
-*Table 2: Augmented Diickey-Fuller test results for investigated time series after first differences*
+*Table 2: Augmented Dickey-Fuller test results for investigated time series after first differences*
+
+After applying the diff(log()), the previously insignificant results (non-stationary) have been transformed to significant results below the threshold of 0.05.
 
 # 4. VAR Model and Granger Causality
-Once the time series are made stationary by applying first differences, the next step is to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables... TBD
+Once the time series are made stationary by applying first differences, the next step is to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables. This approach allows for the exploration of the dynamics and feedback among multiple interrelated time series, offering insights into the causal relationships within the data. 
 
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
+In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. The Granger causality tests indicated no significant predictive relationship. Detailed results and plots are available in the appendix.
+
+## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
+Natural Gas Data is not stationary but give p-value 0.06 checking the results out of curiosity
+This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. The results were insignificant, underscoring the importance of using differenced data for stationarity. Exact results and plots can be found in the appendix.
+
+
+## 4.2 Oil Futures Returns vs Oil US Electricity Generation
+The relationship between oil futures returns and U.S. electricity generation from oil was analyzed. Granger causality tests showed no significant effects, confirming that changes in oil-based electricity generation do not predict oil futures prices. Detailed results and plots are available in the appendix.
+
+## 4.3 Coal Futures Returns vs Coal US Electricity Generation
+This analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The results were insignificant, indicating no predictive causality between the two. Exact results and plots can be found in the appendix.
+
+
+# 5. Results & Conclusion
+The study initiated with Augmented Dickey-Fuller tests which identified non-stationarity in the time series data concerning U.S. energy production and commodity futures prices. To achieve stationarity, necessary for accurate econometric analysis, a diff(log()) transformation was applied. This method effectively stabilized the variance and mean of the series, allowing for further analysis with Vector Autoregression (VAR) models.
+
+Employing VAR models and subsequent Granger causality tests, the study aimed to determine if historical data on energy production could predict futures prices for natural gas, crude oil, and coal. The causality tests, however, did not reveal significant predictive relationships between these variables.
+
+**These findings from section 4 suggest that fluctuations in U.S. energy production do not significantly influence the futures prices of these commodities**, indicating that other external factors such as global economic conditions, market sentiment, or geopolitical events likely have a greater impact. This highlights the complexity of the factors driving commodity markets and suggests that a broader perspective is necessary for understanding and forecasting movements in these prices.
+
+# 6. Appendix
+## Section 4 - Additional information
+
+### 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
 ```{r, results='hide', fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
 VAR_est <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff), ic="AIC", lag.max = 24)
@@ -241,8 +268,8 @@ plot(irf(VAR_est, impulse="Nat_Gas_US_Elec_diff", response="Nat_Gas_Futures_retu
 plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec_diff"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation Diff", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec_Diff at time t
 ```
 
-## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
-Natural Gas Data is not stationary but give p-value 0.06 checking the results out of curiosity
+### 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
+
 ```{r, results='hide', fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
 Nat_Gas_US_Elec <- Nat_Gas_US_Elec[-1]
@@ -257,7 +284,8 @@ plot(irf(VAR_est, impulse="Nat_Gas_US_Elec", response="Nat_Gas_Futures_returns")
 plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec at time t
 ```
 
-## 4.2 Oil Futures Returns vs Oil US Electricity Generation
+### 4.2 Oil Futures Returns vs Oil US Electricity Generation
+
 ```{r, results='hide', fig.width=6, fig.height=4}
 Oil_US_Elec <- Oil_US_Elec[-1]
 VAR_est <- VAR(cbind(Oil_Futures_returns, Oil_US_Elec), ic="AIC", lag.max = 24)
@@ -271,7 +299,8 @@ plot(irf(VAR_est, impulse="Oil_US_Elec", response="Oil_Futures_returns"), xlab =
 plot(irf(VAR_est, impulse="Oil_Futures_returns", response="Oil_US_Elec"), xlab = "Lag", ylab = "Oil US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Oil Futures Returns") # We shock US Oil Electricity Generation at time t
 ```
 
-## 4.3 Coal Futures Returns vs Coal US Electricity Generation
+### 4.3 Coal Futures Returns vs Coal US Electricity Generation
+
 ```{r, results = 'hide', fig.width=6, fig.height=4}
 Coal_US_Elec <- Coal_US_Elec[-1]
 VAR_est <- VAR(cbind(Coal_Futures_returns, Coal_US_Elec), ic="AIC", lag.max = 24)
@@ -285,9 +314,4 @@ plot(irf(VAR_est, impulse="Coal_US_Elec", response="Coal_Futures_returns"), xlab
 plot(irf(VAR_est, impulse="Coal_Futures_returns", response="Coal_US_Elec"), xlab = "Lag", ylab = "Coal US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Coal Futures Returns") # We shock Coal_US_Elec at time t
 ```
 
-# 5. Results & Conclusion
-TBD
-
-# 6. Appendix
-TBD
 
