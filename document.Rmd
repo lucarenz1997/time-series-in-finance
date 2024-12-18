@@ -165,7 +165,7 @@ plot(Coal_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Coal", mai
 ## 3.3 Time Series Sationarity
 To develop the VAR models, it is essential to first ensure that all time series are stationary. A stationary time series is defined as one with consistent statistical properties over time, such as mean, variance, and autocorrelation. To verify stationarity, the Augmented Dickey-Fuller test is applied to each of the investigated time series. The test results, including p-values, are used to assess the stationarity of the time series data, such as futures prices of Natural Gas, Crude Oil, Coal, as well as U.S. energy generation by the energy source. 
 
-```{r, results='hide'}
+```{r}
 # Testing for stationarity for both time series and creating stationary time series of same lengths
 # Futures data
 adf.test(Nat_Gas_Futures_price) # Test for stationarity of the Natural Gas Future price series 
@@ -191,7 +191,7 @@ adf.test(Coal_US_Elec) # Test for stationarity of Coal US Elec Monthly generatio
 
 Time series with a P-value greater than 0.05, such as Natural Gas U.S. energy generation and futures prices of Natural Gas, Crude Oil, and Coal, are classified as non-stationary. To address this, stationarity is introduced by applying diff(log()) transformation.
 
-```{r, results='hide'}
+```{r}
 # Apply diff-log-transformation if necessary
 # Futures Data
 Nat_Gas_Futures_returns <- diff(log(Nat_Gas_Futures_price))
@@ -228,21 +228,41 @@ After applying the diff(log()), the previously insignificant results (non-statio
 
 # 4. VAR Model and Granger Causality
 Once the time series are made stationary by applying first differences, the next step is to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables. This approach allows for the exploration of the dynamics and feedback among multiple interrelated time series, offering insights into the causal relationships within the data. 
+Given three different commodities three separate analyses were performed which followed the same structure:
+- Determine the lag for the model using Akaike information criterion (AIC)
+- Determine the formula for VAR model for the investigated commodity
+- Perform Granger causality test
+- Analyse the residuals
+- Interpret the output 
 
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
-In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. The Granger causality tests indicated no significant predictive relationship. Detailed results and plots are available in the appendix.
+In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. Specifically a VAR model with two explanatory variables was calculated as Natural Gas futures returns as well as differenced Natural Gas U.S energy generation data were analyzed. A VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
+
+<Placeholder for formula>
+
+In the next step, Granger causality tests indicated no significant causal relationship between Natural Gas Futures Data and Natural Gas U.S Electricity generation given the p-value above 0.05. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
 Natural Gas Data is not stationary but give p-value 0.06 checking the results out of curiosity
-This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. The results were insignificant, underscoring the importance of using differenced data for stationarity. Exact results and plots can be found in the appendix.
+This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. Similarly to section 4.1a a VAR model with two explanatory variables was calculated. This time Natural Gas futures returns and Natural Ga U.S energy generation data were analyzed. A second VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
 
+<Placeholder for formula>
+
+Comparably to section 4.1a, the results were insignificant, underscoring the importance of using differenced data for stationarity. Running JB-Test we can state that data is normally distributed. The p-value is with 95% confidence interval and null hypothesis cannot be rejected. Exact results and plots can be found in the appendix.
 
 ## 4.2 Oil Futures Returns vs Oil US Electricity Generation
-The relationship between oil futures returns and U.S. electricity generation from oil was analyzed. Granger causality tests showed no significant effects, confirming that changes in oil-based electricity generation do not predict oil futures prices. Detailed results and plots are available in the appendix.
+In the next model the relationship between oil futures returns and U.S. electricity generation from oil was analyzed. Another VAR model was built fitting Crude Oil futures returns and Crude Oil U.S energy generation data. A VAR model for Crude Oil has two variables Xt, Yt and lag = 1 and looks as follows:
+
+<Placeholder for formula>
+
+Granger causality tests again showed no significant effects, confirming that changes in oil-based electricity generation do not cause oil futures prices. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.3 Coal Futures Returns vs Coal US Electricity Generation
-This analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The results were insignificant, indicating no predictive causality between the two. Exact results and plots can be found in the appendix.
+The last analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The VAR model for this section fits Coal futures returns and Coal U.S energy generation data, variables Xt and Yt, at lag = 1: 
 
+<Placeholder for formula>
+
+Similarly to previous analyses, the results were insignificant, indicating no predictive causality between the two investigated variables. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Exact results and plots can be found in the appendix.
 
 # 5. Results & Conclusion
 The study initiated with Augmented Dickey-Fuller tests which identified non-stationarity in the time series data concerning U.S. energy production and commodity futures prices. To achieve stationarity, necessary for accurate econometric analysis, a diff(log()) transformation was applied. This method effectively stabilized the variance and mean of the series, allowing for further analysis with Vector Autoregression (VAR) models.
@@ -255,63 +275,91 @@ Employing VAR models and subsequent Granger causality tests, the study aimed to 
 ## Section 4 - Additional information
 
 ### 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
-```{r, results='hide', fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
-VAR_est <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff), ic="AIC", lag.max = 24)
-coeftest(VAR_est)
-causality(VAR_est, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
-causality(VAR_est, cause="Nat_Gas_US_Elec_diff")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
+Natural_Gas.bv1 <- cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff)
+lagselect_natural_gas1 <- VARselect(Natural_Gas.bv1, lag.max = 24, type = "const")
+lagselect_natural_gas1$selection
+VAR_est_nat_gas1 <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff), ic="AIC", lag.max = 24)
+coeftest(VAR_est_nat_gas1)
+causality(VAR_est_nat_gas1, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
+causality(VAR_est_nat_gas1, cause="Nat_Gas_US_Elec_diff")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
 
 # Plotting impulse response functions
 par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
-plot(irf(VAR_est, impulse="Nat_Gas_US_Elec_diff", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response \nfrom Natural Gas US Electricity Generation Diff") # We shock Nat_Gas_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec_diff"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation Diff", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec_Diff at time t
+plot(irf(VAR_est_nat_gas1, impulse="Nat_Gas_US_Elec_diff", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response \nfrom Natural Gas US Electricity Generation Diff") # We shock Nat_Gas_Futures_price_diff at time t
+plot(irf(VAR_est_nat_gas1, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec_diff"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation Diff", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec_Diff at time t
+
+# Normal Distribution of the Residuals
+Norm_Nat_Gas1 <- normality.test(VAR_est_nat_gas1, multivariate.only = TRUE)
+Norm_Nat_Gas1
 ```
 
 ### 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
 
-```{r, results='hide', fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 # Estimating vector autoregession and testing for causality
 Nat_Gas_US_Elec <- Nat_Gas_US_Elec[-1]
-VAR_est <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec), ic="AIC", lag.max = 24)
-coeftest(VAR_est)
-causality(VAR_est, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
-causality(VAR_est, cause="Nat_Gas_US_Elec")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
+Natural_Gas.bv2 <- cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec)
+lagselect_natural_gas2 <- VARselect(Natural_Gas.bv2, lag.max = 24, type = "const")
+lagselect_natural_gas2$selection
+VAR_est_nat_gas2 <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec), ic="AIC", lag.max = 24)
+coeftest(VAR_est_nat_gas2)
+causality(VAR_est_nat_gas2, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
+causality(VAR_est_nat_gas2, cause="Nat_Gas_US_Elec")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
 
 # Plotting impulse response functions
 par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
-plot(irf(VAR_est, impulse="Nat_Gas_US_Elec", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response from \nNatural Gas US Electricity Generation") # We shock Nat_Gas_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec at time t
+plot(irf(VAR_est_nat_gas2, impulse="Nat_Gas_US_Elec", response="Nat_Gas_Futures_returns"), xlab = "Lag", ylab = "Natural Gas Futures Returns", main = "Orthogonal Impulse Response from \nNatural Gas US Electricity Generation") # We shock Nat_Gas_Futures_price_diff at time t
+plot(irf(VAR_est_nat_gas2, impulse="Nat_Gas_Futures_returns", response="Nat_Gas_US_Elec"), xlab = "Lag", ylab = "Natural Gas US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Natural Gas Futures Returns") # We shock Nat_Gas_US_Elec at time t
+
+# Normal Distribution of the Residuals
+Norm_Nat_Gas2 <- normality.test(VAR_est_nat_gas2, multivariate.only = TRUE)
+Norm_Nat_Gas2
 ```
 
 ### 4.2 Oil Futures Returns vs Oil US Electricity Generation
 
-```{r, results='hide', fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 Oil_US_Elec <- Oil_US_Elec[-1]
-VAR_est <- VAR(cbind(Oil_Futures_returns, Oil_US_Elec), ic="AIC", lag.max = 24)
-coeftest(VAR_est)
-causality(VAR_est, cause="Oil_Futures_returns")["Granger"] # Testing for Granger-causal effects of the US Oil Electricity Generation on oil futures returns
-causality(VAR_est, cause="Oil_US_Elec")["Granger"] # Testing for Granger-causal effects of oil futures returns on US Oil Electricity Generation
+Oil.bv <- cbind(Oil_Futures_returns, Oil_US_Elec)
+lagselect_oil<- VARselect(Oil.bv, lag.max = 24, type = "const")
+lagselect_oil$selection
+VAR_est_oil <- VAR(cbind(Oil_Futures_returns, Oil_US_Elec), ic="AIC", lag.max = 24)
+coeftest(VAR_est_oil)
+causality(VAR_est_oil, cause="Oil_Futures_returns")["Granger"] # Testing for Granger-causal effects of the US Oil Electricity Generation on oil futures returns
+causality(VAR_est_oil, cause="Oil_US_Elec")["Granger"] # Testing for Granger-causal effects of oil futures returns on US Oil Electricity Generation
 
 # Plotting impulse response functions
 par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
-plot(irf(VAR_est, impulse="Oil_US_Elec", response="Oil_Futures_returns"), xlab = "Lag", ylab = "Oil Futures Returns", main = "Orthogonal Impulse Response \nfrom Oil US Electricity Generation") # We shock Oil futures returns at time t
-plot(irf(VAR_est, impulse="Oil_Futures_returns", response="Oil_US_Elec"), xlab = "Lag", ylab = "Oil US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Oil Futures Returns") # We shock US Oil Electricity Generation at time t
+plot(irf(VAR_est_oil, impulse="Oil_US_Elec", response="Oil_Futures_returns"), xlab = "Lag", ylab = "Oil Futures Returns", main = "Orthogonal Impulse Response \nfrom Oil US Electricity Generation") # We shock Oil futures returns at time t
+plot(irf(VAR_est_oil, impulse="Oil_Futures_returns", response="Oil_US_Elec"), xlab = "Lag", ylab = "Oil US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Oil Futures Returns") # We shock US Oil Electricity Generation at time t
+
+# Normal Distribution of the Residuals
+Norm_Oil <- normality.test(VAR_est_oil, multivariate.only = TRUE)
+Norm_Oil
 ```
 
 ### 4.3 Coal Futures Returns vs Coal US Electricity Generation
 
-```{r, results = 'hide', fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 Coal_US_Elec <- Coal_US_Elec[-1]
-VAR_est <- VAR(cbind(Coal_Futures_returns, Coal_US_Elec), ic="AIC", lag.max = 24)
-coeftest(VAR_est)
-causality(VAR_est, cause="Coal_Futures_returns")["Granger"] # Testing for Granger-causal effects of the Coal_US_Elec on Coal futures returns
-causality(VAR_est, cause="Coal_US_Elec")["Granger"] # Testing for Granger-causal effects of coal futures returns on Coal_US_Elec
+Coal.bv <- cbind(Coal_Futures_returns, Coal_US_Elec)
+lagselect_coal<- VARselect(Coal.bv, lag.max = 24, type = "const")
+lagselect_coal$selection
+VAR_est_coal <- VAR(cbind(Coal_Futures_returns, Coal_US_Elec), ic="AIC", lag.max = 24)
+coeftest(VAR_est_coal)
+causality(VAR_est_coal, cause="Coal_Futures_returns")["Granger"] # Testing for Granger-causal effects of the Coal_US_Elec on Coal futures returns
+causality(VAR_est_coal, cause="Coal_US_Elec")["Granger"] # Testing for Granger-causal effects of coal futures returns on Coal_US_Elec
 
 # Plotting impulse response functions
 par(mfrow = c(1,2), mar = c(4, 4, 2, 1), oma = c(1, 1, 3, 1), cex.main = 0.8, cex.axis = 0.7, cex.lab = 0.8)
-plot(irf(VAR_est, impulse="Coal_US_Elec", response="Coal_Futures_returns"), xlab = "Lag", ylab = "Coal Futures Returns", main = "Orthogonal Impulse Response from \nCoal US Electricity Generation") # We shock Coal_Futures_price_diff at time t
-plot(irf(VAR_est, impulse="Coal_Futures_returns", response="Coal_US_Elec"), xlab = "Lag", ylab = "Coal US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Coal Futures Returns") # We shock Coal_US_Elec at time t
+plot(irf(VAR_est_coal, impulse="Coal_US_Elec", response="Coal_Futures_returns"), xlab = "Lag", ylab = "Coal Futures Returns", main = "Orthogonal Impulse Response from \nCoal US Electricity Generation") # We shock Coal_Futures_price_diff at time t
+plot(irf(VAR_est_coal, impulse="Coal_Futures_returns", response="Coal_US_Elec"), xlab = "Lag", ylab = "Coal US Electricity Generation", main = "Orthogonal Impulse Response \nfrom Coal Futures Returns") # We shock Coal_US_Elec at time t
+
+# Normal Distribution of the Residuals
+Norm_Coal <- normality.test(VAR_est_coal, multivariate.only = TRUE)
+Norm_Coal
 ```
 
 
