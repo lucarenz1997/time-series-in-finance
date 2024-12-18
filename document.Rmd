@@ -138,6 +138,8 @@ write.csv(merged_data,'data/merged_data.csv', row.names=FALSE)
 ```
 
 ## 3.2 Data Preparation and Visualization
+
+Data was prepared and used for analyzing time series data concerning futures prices of natural gas, oil, and coal, alongside U.S. electricity generation from these sources. The data, filtered from January 2012 to August 2024, was transformed into time series objects with a monthly frequency to facilitate further time series analysis and modeling. Plots generated from this data visually represent the trends in both futures prices and electricity generation over the specified period, allowing for preliminary observations on variability and potential correlation between market prices and electricity production.
 ```{r analysis, cache=TRUE}
 # Data filtering from 2012-01-01 to 2024-08-01
 merged_data_reduced <- merged_data[38:189,]
@@ -238,12 +240,20 @@ Given three different commodities three separate analyses were performed which f
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
 In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. Specifically a VAR model with two explanatory variables was calculated as Natural Gas futures returns as well as differenced Natural Gas U.S energy generation data were analyzed. A VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
 
+\[
+\begin{aligned}
+\Delta \text{Nat\_Gas\_Futures\_Returns}_t &= \alpha_1 + \beta_{11} \Delta \text{Nat\_Gas\_Futures\_Returns}_{t-1} + \beta_{12} \Delta \text{Nat\_Gas\_US\_Elec\_Diff}_{t-1} + \epsilon_{1t} \\
+\Delta \text{Nat\_Gas\_US\_Elec\_Diff}_t &= \alpha_2 + \beta_{21} \Delta \text{Nat\_Gas\_Futures\_Returns}_{t-1} + \beta_{22} \Delta \text{Nat\_Gas\_US\_Elec\_Diff}_{t-1} + \epsilon_{2t}
+\end{aligned}
+\]
+
+
 <Placeholder for formula>
 
 In the next step, Granger causality tests indicated no significant causal relationship between Natural Gas Futures Data and Natural Gas U.S Electricity generation given the p-value above 0.05. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
-Natural Gas Data is not stationary but give p-value 0.06 checking the results out of curiosity
+Natural Gas Data is not stationary but given p-value of 0.06, the results were checked out of curiosity.
 This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. Similarly to section 4.1a a VAR model with two explanatory variables was calculated. This time Natural Gas futures returns and Natural Ga U.S energy generation data were analyzed. A second VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
 
 <Placeholder for formula>
