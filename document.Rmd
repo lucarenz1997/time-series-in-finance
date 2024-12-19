@@ -240,20 +240,20 @@ Given three different commodities three separate analyses were performed which f
 * Interpret the output
 
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
-In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. Specifically a VAR model with two explanatory variables was calculated as Natural Gas futures returns as well as differenced Natural Gas U.S energy generation data were analyzed. A VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
+In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. Specifically a VAR model with two explanatory variables was calculated as Natural Gas futures returns as well as differenced Natural Gas U.S energy generation data were analyzed. A VAR model with 2 variables Natural_Gas_Futures_Returns$_t$, Natural_Gas_US_Electricity_Generation_Difference$_t$ and lag = 16 was built. The final model looks like this:
 
-\[
+$$
 \begin{aligned}
-\Delta \text{Nat\_Gas\_Futures\_Returns}_t &= \alpha_1 + \beta_{11} \Delta \text{Nat\_Gas\_Futures\_Returns}_{t-1} + \beta_{12} \Delta \text{Nat\_Gas\_US\_Elec\_Diff}_{t-1} + \epsilon_{1t} \\
-\Delta \text{Nat\_Gas\_US\_Elec\_Diff}_t &= \alpha_2 + \beta_{21} \Delta \text{Nat\_Gas\_Futures\_Returns}_{t-1} + \beta_{22} \Delta \text{Nat\_Gas\_US\_Elec\_Diff}_{t-1} + \epsilon_{2t}
+\Delta \text{Nat Gas Futures Returns}_t &= \alpha_1 + \sum_{j=1}^{16} \beta_{1j1} \Delta \text{Nat Gas Futures Returns}_{t-j} + \sum_{j=1}^{16} \beta_{1j2} \Delta \text{Nat Gas US Elec Diff}_{t-j} + \epsilon_{1t} \\
+\Delta \text{Nat Gas US Elec Diff}_t &= \alpha_2 + \sum_{j=1}^{16} \beta_{2j1} \Delta \text{Nat Gas Futures Returns}_{t-j} + \sum_{j=1}^{16} \beta_{2j2} \Delta \text{Nat Gas US Elec Diff}_{t-j} + \epsilon_{2t}
 \end{aligned}
-\]
+$$
 
 In the next step, Granger causality tests indicated no significant causal relationship between Natural Gas Futures Data and Natural Gas U.S Electricity generation given the p-value above 0.05. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.1b Natural Gas Futures Returns vs Natural Gas US Electricity Generation
 Natural Gas Data is not stationary but given p-value of 0.06, the results were checked out of curiosity.
-This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. Similarly to section 4.1a a VAR model with two explanatory variables was calculated. This time Natural Gas futures returns and Natural Ga U.S energy generation data were analyzed. A second VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
+This section explored the relationship between natural gas futures returns and U.S. electricity generation from natural gas without differencing. Similarly to section 4.1a a VAR model with two explanatory variables was calculated. This time Natural Gas futures returns and Natural Ga U.S energy generation data were analyzed. A second VAR model with 2 variables Natural_Gas_Futures_Returns$_t$, Natural_Gas_US_Electricity_Generation$_t$ and lag = 1 was built. The final model looks like this:
 
 \[
 \begin{aligned}
@@ -266,27 +266,26 @@ This section explored the relationship between natural gas futures returns and U
 Comparably to section 4.1a, the results were insignificant, underscoring the importance of using differenced data for stationarity. Running JB-Test we can state that data is normally distributed. The p-value is with 95% confidence interval and null hypothesis cannot be rejected. Exact results and plots can be found in the appendix.
 
 ## 4.2 Oil Futures Returns vs Oil US Electricity Generation
-In the next model the relationship between oil futures returns and U.S. electricity generation from oil was analyzed. Another VAR model was built fitting Crude Oil futures returns and Crude Oil U.S energy generation data. A VAR model for Crude Oil has two variables Xt, Yt and lag = 1 and looks as follows:
+In the next model the relationship between oil futures returns and U.S. electricity generation from oil was analyzed. Another VAR model was built fitting Crude Oil futures returns and Crude Oil U.S energy generation data. A VAR model for Crude Oil has two variables Oil_Futures_Returns$_t$, Oil_US_Electricity_Generation$_t$ and lag = 2 and looks as follows:
 
-\[
+$$
 \begin{aligned}
-\Delta \text{Oil\_Futures\_Returns}_t &= \alpha_1 + \beta_{11} \Delta \text{Oil\_Futures\_Returns}_{t-1} + \beta_{12} \Delta \text{Oil\_US\_Elec}_{t-1} + \epsilon_{1t} \\
-\Delta \text{Oil\_US\_Elec}_t &= \alpha_2 + \beta_{21} \Delta \text{Oil\_Futures\_Returns}_{t-1} + \beta_{22} \Delta \text{Oil\_US\_Elec}_{t-1} + \epsilon_{2t}
+\Delta \text{Oil Futures Returns}_t &= \alpha_1 + \sum_{j=1}^{2} \beta_{1j1} \Delta \text{Oil Futures Returns}_{t-j} + \sum_{j=1}^{2} \beta_{1j2} \Delta \text{Coal US Elec}_{t-j} + \epsilon_{1t} \\
+\Delta \text{Oil US Elec}_t &= \alpha_2 + \sum_{j=1}^{2} \beta_{2j1} \Delta \text{Oil Futures Returns}_{t-j} + \sum_{j=1}^{2} \beta_{2j2} \Delta \text{Oil US Elec}_{t-j} + \epsilon_{2t}
 \end{aligned}
-\]
-
+$$
 
 Granger causality tests again showed no significant effects, confirming that changes in oil-based electricity generation do not cause oil futures prices. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.3 Coal Futures Returns vs Coal US Electricity Generation
-The last analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The VAR model for this section fits Coal futures returns and Coal U.S energy generation data, variables Xt and Yt, at lag = 1: 
+The last analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The VAR model for this section fits Coal futures returns and Coal U.S energy generation data, variables Coal_Futures_Returns and Coal_US_Electricity_Generation, at lag = 15: 
 
-\[
+$$
 \begin{aligned}
-\Delta \text{Coal\_Futures\_Returns}_t &= \alpha_1 + \beta_{11} \Delta \text{Coal\_Futures\_Returns}_{t-1} + \beta_{12} \Delta \text{Coal\_US\_Elec}_{t-1} + \epsilon_{1t} \\
-\Delta \text{Coal\_US\_Elec}_t &= \alpha_2 + \beta_{21} \Delta \text{Coal\_Futures\_Returns}_{t-1} + \beta_{22} \Delta \text{Coal\_US\_Elec}_{t-1} + \epsilon_{2t}
+\Delta \text{Coal Futures Returns}_t &= \alpha_1 + \sum_{j=1}^{15} \beta_{1j1} \Delta \text{Coal Futures Returns}_{t-j} + \sum_{j=1}^{15} \beta_{1j2} \Delta \text{Coal US Elec}_{t-j} + \epsilon_{1t} \\
+\Delta \text{Coal US Elec}_t &= \alpha_2 + \sum_{j=1}^{15} \beta_{2j1} \Delta \text{Coal Futures Returns}_{t-j} + \sum_{j=1}^{15} \beta_{2j2} \Delta \text{Coal US Elec}_{t-j} + \epsilon_{2t}
 \end{aligned}
-\]
+$$
 
 Similarly to previous analyses, the results were insignificant, indicating no predictive causality between the two investigated variables. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Exact results and plots can be found in the appendix.
 
