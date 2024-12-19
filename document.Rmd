@@ -1,5 +1,5 @@
 ---
-title: "Investigation of the relationship between price of futures contracts of energy commodities and their energy generation contribution to US energy grid"
+title: "Investigation of The Relationship between Price of Futures Contracts of Energy Commodities and their Energy Generation Contribution to U.S Energy Grid"
 author: "Luca Renz & Kasper Aleksander Kuznik"
 date: "December 2024"
 output:
@@ -19,13 +19,14 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
 \newpage
 
 # 1. Introduction
-Energy generation and its relationship to commodity markets have significant implications for financial stability and market behavior. This paper examines the influence of U.S. energy generation—categorized by sources such as natural gas, crude oil, and coal—on the corresponding commodities futures prices. By employing time series analysis, we explore how shifts in energy generation impact the pricing dynamics of these key commodities. While the focus of this documentation is on the primary findings and visualizations, supplementary charts and detailed analyses are included in the appendix.
+Energy generation and its relationship to commodity markets have significant implications for financial stability and market behavior. This paper examines the influence of U.S. energy generation — categorized by sources such as natural gas, crude oil, and coal — on the corresponding commodities futures prices listed on commodities exchanges in the United States. By employing time series analysis, shifts in energy generation impacting the pricing dynamics of these key commodities are explored. While the focus of this documentation is on the primary findings and visualizations, supplementary charts and detailed analyses are included in the appendix.
 
 # 2. Motivation
-The interplay between commodity markets and energy generation is pivotal to understanding economic resilience and environmental sustainability in the contemporary energy landscape. This study is motivated by the need to dissect the dynamics between U.S. energy production and the futures prices of critical commodities—namely natural gas, crude oil, and coal. These commodities not only fuel the nation but also significantly influence the financial markets due to their integral role in energy generation. Therefore, the hypothesis under test in this study is that changes in U.S. energy generation impact the futures prices of natural gas, crude oil, and coal. It is aimed to verify this by analyzing time series data to understand if energy production fluctuations can predictably influence market trends.
+The interplay between commodity markets and energy generation is pivotal to understanding economic resilience and environmental sustainability in the contemporary energy landscape. This study is motivated by the need to dissect the dynamics between U.S. energy production and the futures prices of critical commodities where the energy come from — namely natural gas, crude oil, and coal. Futures contracts are selected due to two reasons related to the nature of the commodities market: (i) most of the trading volume takes place on the futures markets and (ii) prices of these instruments are common benchmarks of the actual energy commodity prices. 
+Given the energy needs around the world and size of the energy commodities market, aforementioned commodities not only fulfill basic needs but also significantly influence the financial markets globally. To perform this study United States was selected as a country of interest and therefore, the following hypothesis was investigated: changes in U.S. energy generation impact the futures prices of natural gas, crude oil, and coal. It is aimed to verify this by analyzing time series data to understand if energy production fluctuations have causal relationship with corresponding commodity future price.
 
 # 3. Methods
-To investigate the causal relationship between U.S. energy generation by source and commodities futures prices for Natural Gas, Crude Oil, and Coal, the first step is to prepare the data to ensure comparability. After cleansing and preprocessing the data, the "Augmented Dickey-Fuller Test" is applied to determine whether the time series are stationary. If any time series are found to be non-stationary, they are transformed using the diff(log()) method until the "Dickey-Fuller Test" confirms stationarity. Once the series are stationary, they are used to construct vector autoregressive models (VAR models) to analyze the dynamic relationships. Additionally, Granger causality tests are performed to evaluate the direction and strength of causality between the variables.
+To investigate the causal relationship between U.S. energy generation by source and commodities futures prices for Natural Gas, Crude Oil, and Coal, the first step was to prepare the data to ensure comparability. After cleansing and preprocessing the data, the "Augmented Dickey-Fuller Test" was applied to determine whether the time series are stationary. If any time series were found to be non-stationary, they were transformed using the diff(log()) method until the "Dickey-Fuller Test" confirms stationarity. Once the series were stationary, they were used to construct vector autoregressive models (VAR models) to analyze the dynamic relationships. Additionally, Granger causality tests were performed to evaluate the direction and strength of causality between the variables as well as the distribution of the residuals was analyzed.
 
 ## 3.1 Data collection and preprocessing
 The historical futures prices for Natural Gas, Crude Oil (WTI), and Newcastle Coal were sourced from Barchart.com in the form of CSV files. Data on U.S. electricity generation, categorized by energy source, was obtained from the U.S. Energy Information Administration as XLSX file. This method required manual extraction and preparation. The availability of data varies: Crude Oil futures pricing data begins in 1983, Natural Gas futures data in 1990, Coal futures data in 2009, and U.S. energy generation data in 2001. All datasets were reported on a monthly basis and were available up to August 2024. Despite these differences in starting dates, the data was aligned to ensure consistency for the analysis period.
@@ -164,8 +165,8 @@ plot(Oil_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Oil", main 
 plot(Coal_US_Elec, xlab = "Time", ylab = "US Electricity Generation - Coal", main = "Coal US Electricity Generation\n Jan2012 - Aug2024")
 ```
 
-## 3.3 Time Series Sationarity
-To develop the VAR models, it is essential to first ensure that all time series are stationary. A stationary time series is defined as one with consistent statistical properties over time, such as mean, variance, and autocorrelation. To verify stationarity, the Augmented Dickey-Fuller test is applied to each of the investigated time series. The test results, including p-values, are used to assess the stationarity of the time series data, such as futures prices of Natural Gas, Crude Oil, Coal, as well as U.S. energy generation by the energy source. 
+## 3.3 Time Series Stationarity
+To develop the VAR models, it is essential to first ensure that all time series are stationary. A stationary time series is defined as one with consistent statistical properties over time, such as mean, variance, and autocorrelation. To verify stationarity, the Augmented Dickey-Fuller test was applied to each of the investigated time series. The test results, including p-values, were used to assess the stationarity of the time series data, such as futures prices of Natural Gas, Crude Oil, Coal, as well as U.S. energy generation by the energy source. 
 
 ```{r, results='hide'}
 # Testing for stationarity for both time series and creating stationary time series of same lengths
@@ -191,7 +192,7 @@ adf.test(Coal_US_Elec) # Test for stationarity of Coal US Elec Monthly generatio
 
 *Table 1: Augmented Diickey-Fuller test results for investigated time series*
 
-Time series with a P-value greater than 0.05, such as Natural Gas U.S. energy generation and futures prices of Natural Gas, Crude Oil, and Coal, are classified as non-stationary. To address this, stationarity is introduced by applying diff(log()) transformation.
+Time series with a P-value greater than 0.05, such as Natural Gas U.S. energy generation and futures prices of Natural Gas, Crude Oil, and Coal, were classified as non-stationary. To address this, stationarity was introduced by applying diff(log()) transformation.
 
 ```{r, results='hide'}
 # Apply diff-log-transformation if necessary
@@ -226,16 +227,17 @@ adf.test(Nat_Gas_US_Elec_diff) # Test for stationarity of Diff of Coal US Elec M
 
 *Table 2: Augmented Dickey-Fuller test results for investigated time series after first differences*
 
-After applying the diff(log()), the previously insignificant results (non-stationary) have been transformed to significant results below the threshold of 0.05.
+After applying the diff(log()), the previously insignificant results (non-stationary) were transformed to significant results below the threshold of 0.05.
 
 # 4. VAR Model and Granger Causality
-Once the time series are made stationary by applying first differences, the next step is to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables. This approach allows for the exploration of the dynamics and feedback among multiple interrelated time series, offering insights into the causal relationships within the data. 
+Once the time series were made stationary by applying first differences, the next step was to fit a Vector Autoregressive model to the stationary data. The VAR model captures the linear relationships between a variable and its own past values, as well as the past values of other endogenous variables. This approach allows for the exploration of the dynamics and feedback among multiple interrelated time series, offering insights into the causal relationships within the data. 
 Given three different commodities three separate analyses were performed which followed the same structure:
-- Determine the lag for the model using Akaike information criterion (AIC)
-- Determine the formula for VAR model for the investigated commodity
-- Perform Granger causality test
-- Analyse the residuals
-- Interpret the output 
+
+* Determine the lag for the model using Akaike information criterion (AIC)
+* Determine the formula for VAR model for the investigated commodity
+* Perform Granger causality test
+* Analyse the diistribution of the residuals
+* Interpret the output
 
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
 In this analysis, the relationship between differenced natural gas futures returns and changes in U.S. electricity generation from natural gas was examined using VAR models. Specifically a VAR model with two explanatory variables was calculated as Natural Gas futures returns as well as differenced Natural Gas U.S energy generation data were analyzed. A VAR model with 2 variables Xt, Yt and lag = 1 was built. The final model looks like this:
@@ -295,6 +297,8 @@ Employing VAR models and subsequent Granger causality tests, the study aimed to 
 
 **These findings from section 4 suggest that fluctuations in U.S. energy production do not significantly influence the futures prices of these commodities**, indicating that other external factors such as global economic conditions, market sentiment, or geopolitical events likely have a greater impact. This highlights the complexity of the factors driving commodity markets and suggests that a broader perspective is necessary for understanding and forecasting movements in these prices.
 
+\newpage
+
 # 6. Appendix
 ## Section 4 - Additional information
 
@@ -304,7 +308,7 @@ Employing VAR models and subsequent Granger causality tests, the study aimed to 
 Natural_Gas.bv1 <- cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff)
 lagselect_natural_gas1 <- VARselect(Natural_Gas.bv1, lag.max = 24, type = "const")
 lagselect_natural_gas1$selection
-VAR_est_nat_gas1 <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec_diff), ic="AIC", lag.max = 24)
+VAR_est_nat_gas1 <- VAR(Natural_Gas.bv1, ic="AIC", lag.max = 24)
 coeftest(VAR_est_nat_gas1)
 causality(VAR_est_nat_gas1, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
 causality(VAR_est_nat_gas1, cause="Nat_Gas_US_Elec_diff")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
@@ -327,7 +331,7 @@ Nat_Gas_US_Elec <- Nat_Gas_US_Elec[-1]
 Natural_Gas.bv2 <- cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec)
 lagselect_natural_gas2 <- VARselect(Natural_Gas.bv2, lag.max = 24, type = "const")
 lagselect_natural_gas2$selection
-VAR_est_nat_gas2 <- VAR(cbind(Nat_Gas_Futures_returns, Nat_Gas_US_Elec), ic="AIC", lag.max = 24)
+VAR_est_nat_gas2 <- VAR(Natural_Gas.bv2, ic="AIC", lag.max = 24)
 coeftest(VAR_est_nat_gas2)
 causality(VAR_est_nat_gas2, cause="Nat_Gas_Futures_returns")["Granger"] # Testing for Granger-causal effects of Natural Gas US Electricity Generation on Natural Gas Futures Returns
 causality(VAR_est_nat_gas2, cause="Nat_Gas_US_Elec")["Granger"] # Testing for Granger-causal effects of Natural Gas Futures Returns on Natural Gas US Electricity Generation
@@ -342,14 +346,14 @@ Norm_Nat_Gas2 <- normality.test(VAR_est_nat_gas2, multivariate.only = TRUE)
 Norm_Nat_Gas2
 ```
 
-### 4.2 Oil Futures Returns vs Oil US Electricity Generation
+### 4.2 Crude Oil Futures Returns vs Oil US Electricity Generation
 
 ```{r, fig.width=6, fig.height=4}
 Oil_US_Elec <- Oil_US_Elec[-1]
 Oil.bv <- cbind(Oil_Futures_returns, Oil_US_Elec)
 lagselect_oil<- VARselect(Oil.bv, lag.max = 24, type = "const")
 lagselect_oil$selection
-VAR_est_oil <- VAR(cbind(Oil_Futures_returns, Oil_US_Elec), ic="AIC", lag.max = 24)
+VAR_est_oil <- VAR(Oil.bv, ic="AIC", lag.max = 24)
 coeftest(VAR_est_oil)
 causality(VAR_est_oil, cause="Oil_Futures_returns")["Granger"] # Testing for Granger-causal effects of the US Oil Electricity Generation on oil futures returns
 causality(VAR_est_oil, cause="Oil_US_Elec")["Granger"] # Testing for Granger-causal effects of oil futures returns on US Oil Electricity Generation
@@ -371,7 +375,7 @@ Coal_US_Elec <- Coal_US_Elec[-1]
 Coal.bv <- cbind(Coal_Futures_returns, Coal_US_Elec)
 lagselect_coal<- VARselect(Coal.bv, lag.max = 24, type = "const")
 lagselect_coal$selection
-VAR_est_coal <- VAR(cbind(Coal_Futures_returns, Coal_US_Elec), ic="AIC", lag.max = 24)
+VAR_est_coal <- VAR(Coal.bv, ic="AIC", lag.max = 24)
 coeftest(VAR_est_coal)
 causality(VAR_est_coal, cause="Coal_Futures_returns")["Granger"] # Testing for Granger-causal effects of the Coal_US_Elec on Coal futures returns
 causality(VAR_est_coal, cause="Coal_US_Elec")["Granger"] # Testing for Granger-causal effects of coal futures returns on Coal_US_Elec
