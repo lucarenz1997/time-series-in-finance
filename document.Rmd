@@ -278,7 +278,7 @@ $$
 Granger causality tests again showed no significant effects, confirming that changes in oil-based electricity generation do not cause oil futures prices. Running JB-Test we cannot state that data is normally distributed. The p-value is less than 0.05 rejecting the hypothesis about normal distribution of residuals. Detailed results and plots are available in the appendix.
 
 ## 4.3 Coal Futures Returns vs Coal US Electricity Generation
-The last analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The VAR model for this section fits Coal futures returns and Coal U.S energy generation data, variables Coal_Futures_Returns and Coal_US_Electricity_Generation, at lag = 15: 
+The last analysis investigated the impact of changes in coal-based U.S. electricity generation on coal futures returns. The VAR model for this section fits Coal futures returns and Coal U.S energy generation data, variables Coal_Futures_Returns$_t$ and Coal_US_Electricity_Generation$_t$, at lag = 15: 
 
 $$
 \begin{aligned}
