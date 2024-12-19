@@ -190,7 +190,7 @@ adf.test(Coal_US_Elec) # Test for stationarity of Coal US Elec Monthly generatio
 | US Electricity Generation Crude Oil   |  0.010  |
 | US Electricity Generation Coal        |  0.010  |
 
-*Table 1: Augmented Diickey-Fuller test results for investigated time series*
+*Table 1: Augmented Dickey-Fuller test results for investigated time series*
 
 Time series with a P-value greater than 0.05, such as Natural Gas U.S. energy generation and futures prices of Natural Gas, Crude Oil, and Coal, were classified as non-stationary. To address this, stationarity was introduced by applying diff(log()) transformation.
 
@@ -236,7 +236,7 @@ Given three different commodities three separate analyses were performed which f
 * Determine the lag for the model using Akaike information criterion (AIC)
 * Determine the formula for VAR model for the investigated commodity
 * Perform Granger causality test
-* Analyse the diistribution of the residuals
+* Analyse the distribution of the residuals
 * Interpret the output
 
 ## 4.1a Natural Gas Futures Returns vs Natural Gas US Electricity Generation Difference
